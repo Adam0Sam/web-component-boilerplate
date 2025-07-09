@@ -1,3 +1,11 @@
-import { wrap } from './utils';
-import observedAttributesHelloworld from './components/hello-world/hello-world.observed-attributes';
-customElements.define('hello-world', wrap(()=>import('./components/hello-world/hello-world.component'), 'HelloWorld', observedAttributesHelloworld));
+import { defineRegisteredComponents } from './components';
+
+async function initializeApp() {
+	try {
+		await defineRegisteredComponents();
+		console.log('All components registered successfully!');
+	} catch (error) {
+		console.error('Failed to initialize components:', error);
+	}
+}
+initializeApp();

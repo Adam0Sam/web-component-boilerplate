@@ -1,17 +1,16 @@
 import html from './{{cmpName}}.html';
 import style from './styles/main.css';
 import { Component } from "@/utils";
+import observedAttributes from './{{cmpName}}.observed-attributes';
 
 @Component({
     html: html,
     style: style,
-	  properties: []
+    properties: [],
+    observedAttributes: observedAttributes,
+    tagName: '{{cmpName}}'
 })
 export class {{cmpNamePascalCase}} implements IWebComponent {
-
-	static observedAttributes() {
-    // return an array containing the names of the attributes you want to observe
-	}
 
   constructor(private $el: HTMLElement, private $host: Element) {}
 

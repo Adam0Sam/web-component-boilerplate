@@ -1,26 +1,33 @@
+import { kebabCase } from '../utils/case-utils';
+import { ComponentRegistry } from './components/registry';
+
 interface IWebComponentDecorated extends IWebComponent {
-	srcHtml: string,
-	srcStyle: string
+	srcHtml: string;
+	srcStyle: string;
 }
 
 interface OriginalComponentClassType {
 	observedAttributes: Array<string>;
-	new(...args: any[]): IWebComponentDecorated
+	new (...args: any[]): IWebComponentDecorated;
 }
 
 interface AttributeValue {
-	name: string,
-	oldValue: string,
-	newValue: string
+	name: string;
+	oldValue: string;
+	newValue: string;
 }
 
-export const wrap = (importFn: () => Promise<any>, className: string, observedAttributes: Array<string>) => {
-
+export const wrap = (
+	importFn: () => Promise<any>,
+	className: string,
+	observedAttributes: Array<string>,
+) => {
 	class CustomComponent extends HTMLElement {
-
-		private _originalComp: IWebComponentDecorated = {} as IWebComponentDecorated;
+		private _originalComp: IWebComponentDecorated =
+			{} as IWebComponentDecorated;
 		private _connected = false;
-		private _originalConstruct: OriginalComponentClassType = {} as OriginalComponentClassType;
+		private _originalConstruct: OriginalComponentClassType =
+			{} as OriginalComponentClassType;
 		private _changedAttributes = false;
 		private _attrArr: Array<AttributeValue> = [];
 
@@ -35,22 +42,25 @@ export const wrap = (importFn: () => Promise<any>, className: string, observedAt
 
 			const shadow = this.attachShadow({ mode: 'open' });
 
-			importFn().then((m) => {
-
-				this._originalConstruct = m[className];
+			importFn().then((module) => {
+				this._originalConstruct = className
+					? module[className]
+					: module.default;
 
 				this._originalComp = new this._originalConstruct(shadow, shadow.host);
 
-				this._originalConstruct.prototype?.properties?.forEach((prop: string) => {
-					Object.defineProperty(this, prop, {
-						get: () => {
-							return (this._originalComp as any)[prop];
-						},
-						set: (val) => {
-							(this._originalComp as any)[prop] = val;
-						},
-					});
-				});
+				this._originalConstruct.prototype?.properties?.forEach(
+					(prop: string) => {
+						Object.defineProperty(this, prop, {
+							get: () => {
+								return (this._originalComp as any)[prop];
+							},
+							set: (val) => {
+								(this._originalComp as any)[prop] = val;
+							},
+						});
+					},
+				);
 
 				shadow.innerHTML = this._originalComp!.srcHtml;
 				const firstChild = shadow.firstChild;
@@ -64,13 +74,17 @@ export const wrap = (importFn: () => Promise<any>, className: string, observedAt
 					this._originalComp.connectedCallback();
 					if (!this._changedAttributes) {
 						this._attrArr.forEach((attr: AttributeValue) =>
-							this._originalComp?.attributeChangedCallback(attr.name, attr.oldValue, attr.newValue));
+							this._originalComp?.attributeChangedCallback(
+								attr.name,
+								attr.oldValue,
+								attr.newValue,
+							),
+						);
 						this._changedAttributes = true;
 					}
 				}
 
 				this.dispatchEvent(new Event('ready'));
-
 			});
 		}
 
@@ -89,8 +103,7 @@ export const wrap = (importFn: () => Promise<any>, className: string, observedAt
 		attributeChangedCallback(name: string, oldValue: any, newValue: any) {
 			if (!this._changedAttributes) {
 				this._attrArr.push({ name, oldValue, newValue });
-			}
-			else {
+			} else {
 				this._originalComp?.attributeChangedCallback(name, oldValue, newValue);
 			}
 		}
@@ -99,40 +112,23 @@ export const wrap = (importFn: () => Promise<any>, className: string, observedAt
 	return CustomComponent;
 };
 
-type MetaDataComponent = { html?: string, style?: string, properties?: Array<string> };
+type MetaDataComponent = {
+	html?: string;
+	style?: string;
+	properties?: Array<string>;
+	observedAttributes: Array<string>;
+};
 
 export function Component(meta: MetaDataComponent) {
 	return (target: Function) => {
-
 		target.prototype.srcHtml = meta?.html || '';
 		target.prototype.srcStyle = meta?.style || '';
 		target.prototype.properties = meta?.properties || [];
 
-		// Ref.: https://gist.github.com/remojansen/16c661a7afd68e22ac6e
+		const tagName = kebabCase(target.name);
+		const observedAttributes = meta.observedAttributes || [];
 
-		// // save a reference to the original constructor
-		// var original = target;
-		//
-		// // a utility function to generate instances of a class
-		// const construct = (constructor: Function, args: any) => {
-		//     let c : any = function () {
-		//         return constructor.apply(this, args);
-		//     }
-		//     c.prototype = constructor.prototype;
-		//     return new c();
-		// }
-		//
-		// // the new constructor behaviour
-		// var f : any = function (...args: any) {
-		//     console.log("New: " + original.name);
-		//     return construct(original, args);
-		// }
-		//
-		// // copy prototype so intanceof operator still works
-		// f.prototype = original.prototype;
-		//
-		// // return new constructor (will override original)
-		// return f;
+		const componentRegistry = ComponentRegistry.getInstance();
+		componentRegistry.registerComponent(tagName, { observedAttributes });
 	};
-
 }

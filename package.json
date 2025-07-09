@@ -22,6 +22,7 @@
     "publish:npm:minor": "npm run _bump-minor && npm run build:npm npm login && npm publish",
     "publish:npm:major": "npm run _bump-major && npm run build:npm npm login && npm publish",
     "create-new-component": "./scripts/newComponent.js",
+    "generate-components": "node scripts/generateComponents.js",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "update": "rm -f package-lock.json && npm update",
     "version-and-publish": "npm version patch && npm publish",
