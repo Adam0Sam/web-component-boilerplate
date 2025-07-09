@@ -1,4 +1,4 @@
-import { kebabCase } from '../utils/case-utils';
+import { kebabCase } from '../utils/case-utils.js';
 import { ComponentRegistry } from './components/registry';
 
 interface IWebComponentDecorated extends IWebComponent {

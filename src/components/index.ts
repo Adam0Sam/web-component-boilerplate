@@ -4,7 +4,7 @@
 
 import { wrap } from '@/utils';
 import { ComponentRegistry } from './registry';
-import { pascalCase } from 'utils/case-utils';
+import { pascalCase } from 'utils/case-utils.js';
 
 export const defineRegisteredComponents = async () => {
 	const componentRegistry = ComponentRegistry.getInstance();
