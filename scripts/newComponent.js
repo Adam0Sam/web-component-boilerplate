@@ -145,7 +145,7 @@ if (nameComponent) {
 
 	if (importSectionEnd !== -1) {
 		// Insert the new import statement before the existing imports
-		const newImportStatement = `import './${kebabNameComponent}/${kebabNameComponent}.component';\n`;
+		const newImportStatement = `import './${kebabNameComponent}/${kebabNameComponent}.component';\n\n`;
 
 		// Insert after the auto-generated comment but before the main imports
 		componentsIndex =
@@ -154,7 +154,7 @@ if (nameComponent) {
 			componentsIndex.slice(importSectionEnd);
 	} else {
 		// Fallback: add at the beginning if structure is different
-		const newImportStatement = `import './${kebabNameComponent}/${kebabNameComponent}.component';\n`;
+		const newImportStatement = `import './${kebabNameComponent}/${kebabNameComponent}.component';\n\n`;
 		componentsIndex = newImportStatement + componentsIndex;
 	}
 
